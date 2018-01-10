@@ -1,0 +1,12 @@
+{
+  "name": "WuHanLianJia",
+  "version": "0.0.1",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "config": "^1.29.1",
+    "ljx-sequelize-wrapper": "^0.2.3",
+    "mysql2": "^1.5.1",
+    "request": "^2.83.0",
+    "sequelize": "^4.31.0"
+  }
+}
