@@ -1,6 +1,6 @@
 module.exports = {
   mysql: {
-    database: 'WuHanLianJia',
+    database: 'lianjia',
     username: 'root',
     password: 'root',
     options: {
