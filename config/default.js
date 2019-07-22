@@ -6,12 +6,13 @@ module.exports = {
     options: {
       host: '127.0.0.1',
       port: '3306',
-      dialect: 'mysql'
-    }
+      dialect: 'mysql',
+      logging: require('../logger').info,
+    },
   },
   cache: false,
   port: 5100,
   cluster: false,
   basis: {},
-  uploadPath: `${process.cwd()}/uploadFile`
-}
+  uploadPath: `${process.cwd()}/uploadFile`,
+};
