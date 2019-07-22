@@ -26,12 +26,12 @@ async function run() {
   await getXiaoQu();
 
   const after = moment();
-  logger.info('抓取数据总时间: ', after - before);
+  logger.info(`抓取数据总时间: ${after - before}`);
 }
 
 run()
   .catch(err => {
-    console.error('Error:', err);
+    logger.info(`Error: ${err}`);
     process.exit();
   })
   .then(() => {
