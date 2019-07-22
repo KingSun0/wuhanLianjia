@@ -3,6 +3,19 @@ const { getXiaoQu } = require('./getXiaoQu');
 const moment = require('moment');
 const logger = require('./logger');
 
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info();
+logger.info('开始抓取爬虫');
+
 /**
  * 创建数据库
  */
@@ -22,6 +35,6 @@ run()
     process.exit();
   })
   .then(() => {
-    console.log('爬虫抓取完成');
+    logger.info('爬虫抓取完成');
     process.exit();
   });

@@ -16,7 +16,7 @@ exports.getXiaoQu = async () => {
 
   for (const region of regions) {
     for (let i = 1; i <= 20; i++) {
-      await sleep(5000);
+      await sleep(10000);
       const url = `https://wh.lianjia.com/xiaoqu/${region}/pg${i}/`;
       await insertXiaoQu(browser, url);
     }
@@ -64,6 +64,7 @@ async function insertXiaoQu(browser, url) {
         const position = positions[j];
         item.tags.push(position.innerText.trim());
       }
+      item.district = item.tags[0];
 
       item.price = parseInt(xiaoQu.querySelector('.totalPrice span').innerText);
       item.toSellHouse = parseInt(
