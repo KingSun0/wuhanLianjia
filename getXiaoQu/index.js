@@ -1,40 +1,72 @@
 const puppeteer = require('puppeteer-core');
 const moment = require('moment');
-const { models, sequelize } = require('./models');
-const logger = require('./logger');
+const { models, sequelize } = require('../models');
+const logger = require('../logger');
 
 let totalXiaoQuW = null;
 
 const regions = ['wuchang', 'donghugaoxin', 'hanyang', 'jianghan', 'jiangan'];
 
-exports.getXiaoQu = async () => {
+exports.getXiaoQu = async query => {
   const browser = await puppeteer.launch({
     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     ignoreHTTPSErrors: true,
     // headless: false,
   });
 
-  for (const region of regions) {
-    for (let i = 1; i <= 20; i++) {
-      await sleep(10000);
-      const url = `https://wh.lianjia.com/xiaoqu/${region}/pg${i}/`;
-      await insertXiaoQu(browser, url);
+  if (query) {
+    const url = `https://wh.lianjia.com/xiaoqu/${query.region}/pg${query.page}/`;
+    await insertXiaoQu(browser, url);
+    logger.info(`${query.region} 区域的第 ${query.page} 页数据抓取完成`);
+  } else {
+    for (const region of regions) {
+      let i = 1;
+      while (true) {
+        await sleep(10000);
+        const url = `https://wh.lianjia.com/xiaoqu/${region}/pg${i}/`;
+        let data = [];
+        try {
+          data = await insertXiaoQu(browser, url);
+        } catch (e) {
+          logger.error(`${region} 区域的第 ${i} 页数据出现错误`);
+          logger.error(e);
+          i++;
+          continue;
+        }
+        if (!data.length) {
+          logger.info(`${region} 区域的第 ${i} 页没有数据，停止抓取`);
+          break;
+        }
+        if (i > 80) {
+          logger.info(`${region} 区域超过 80 页，停止抓取`);
+          break;
+        }
+
+        logger.info(`${region} 区域的第 ${i} 页数据抓取完成`);
+
+        i++;
+      }
     }
   }
+
   await browser.close();
+  logger.info('删除重复数据完成');
+  logger.info('close browser');
 
   // 删除重复数据
-  await sequelize.query(`
-    DELETE FROM XiaoQu
-      WHERE id IN (
-        SELECT * FROM (
-          SELECT X2.id
-          FROM XiaoQu X1
-          LEFT JOIN XiaoQu X2
-          ON X1.id < X2.id AND X1.ljId = X2.ljId AND X1.selectTime = X2.selectTime
-        ) X3
-    )
-`);
+  // await sequelize.query(`
+  //   DELETE FROM XiaoQu
+  //     WHERE id IN (
+  //       SELECT * FROM (
+  //         SELECT X2.id
+  //         FROM XiaoQu X1
+  //         LEFT JOIN XiaoQu X2
+  //         ON X1.id < X2.id AND X1.ljId = X2.ljId AND X1.selectTime = X2.selectTime
+  //       ) X3
+  //   )
+  // `);
+
+  logger.info('查询小区数据完成');
 };
 
 async function insertXiaoQu(browser, url) {
@@ -43,6 +75,7 @@ async function insertXiaoQu(browser, url) {
     timeout: 0,
     waitUntil: ['domcontentloaded'],
   });
+
   const { totalXiaoQu, data } = await page.evaluate(() => {
     // 总的小区数量
     const totalXiaoQu = document.querySelector('.total.fl span').innerText.trim();
@@ -78,7 +111,7 @@ async function insertXiaoQu(browser, url) {
   });
 
   if (!totalXiaoQuW) {
-    logger.info(`${moment().format('YYYY-MM-DD HH:mm')}总共查询 ${totalXiaoQu} 个小区`);
+    logger.info(`${moment().format('YYYY-MM-DD HH:mm')} 总共查询 ${totalXiaoQu} 个小区`);
     totalXiaoQuW = totalXiaoQu;
   }
 
@@ -87,6 +120,9 @@ async function insertXiaoQu(browser, url) {
   await models.XiaoQu.bulkCreate(data);
 
   await page.close();
+  logger.info('close page');
+
+  return data;
 }
 
 async function sleep(time) {

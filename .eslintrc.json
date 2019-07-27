@@ -4,7 +4,8 @@
     "parser": "babel-eslint",
     "rules": {
         "strict": "off",
-        "valid-jsdoc": "off"
+        "valid-jsdoc": "off",
+        "no-constant-condition": "off"
     },
     "globals": {
         "document": true
